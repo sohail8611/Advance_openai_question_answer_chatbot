@@ -42,48 +42,47 @@ def generate_json_with_embeddings(data):
 
 
 def extract_pdf_content(pdf_path):
-    try:
-        pdf_file = open(pdf_path, 'rb')
-        pdf_reader = PyPDF2.PdfReader(pdf_file)
-        pdf_name = os.path.basename(pdf_path)
-        content_chunks = []
+    
+    pdf_file = open(pdf_path, 'rb')
+    pdf_reader = PyPDF2.PdfReader(pdf_file)
+    pdf_name = os.path.basename(pdf_path)
+    content_chunks = []
 
+    
+    for page_num, page in enumerate(pdf_reader.pages, 1):
+        content = page.extract_text()
         
-        for page_num, page in enumerate(pdf_reader.pages, 1):
-            content = page.extract_text()
-            
-            _content = content.split('\n')
-            half_page = len(_content)//2
-            chunk = ''
-            for i in range(half_page):
-                chunk+=_content[i]+'\n'
-            page_chunk = {
-                "chunk_id": str(uuid.uuid4()),
-                "chunk": chunk,
-                "page_num": page_num,
-                "pdf_name": pdf_name,
-            }
-            content_chunks.append(page_chunk)
+        _content = content.split('\n')
+        half_page = len(_content)//2
+        chunk = ''
+        for i in range(half_page):
+            chunk+=_content[i]+'\n'
+        page_chunk = {
+            "chunk_id": str(uuid.uuid4()),
+            "chunk": chunk,
+            "page_num": page_num,
+            "pdf_name": pdf_name,
+        }
+        content_chunks.append(page_chunk)
 
-            chunk = ''
-            for j in range(half_page,len(_content)):
-                chunk+=_content[j]+'\n'
-            page_chunk = {
-                "chunk_id": str(uuid.uuid4()),
-                "chunk": chunk,
-                "page_num": page_num,
-                "pdf_name": pdf_name
-            }
-            content_chunks.append(page_chunk)
-            
+        chunk = ''
+        for j in range(half_page,len(_content)):
+            chunk+=_content[j]+'\n'
+        page_chunk = {
+            "chunk_id": str(uuid.uuid4()),
+            "chunk": chunk,
+            "page_num": page_num,
+            "pdf_name": pdf_name
+        }
+        content_chunks.append(page_chunk)
+        
 
+    pdf_file.close()
+
+    try:
         pdf_file.close()
-    except Exception as e:
-        print(e)
-        try:
-            pdf_file.close()
-        except:
-            pass
+    except:
+        pass
     return content_chunks
 
         
